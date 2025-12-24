@@ -5,7 +5,6 @@ Raspberry Pi streams data to cloud server
 """
 
 from flask import Flask, render_template, jsonify, send_file, request
-from flask_socketio import SocketIO
 from flask_cors import CORS
 import os
 from datetime import datetime
@@ -15,7 +14,6 @@ import csv
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'climate-cloud-2024')
 CORS(app)
-socketio = SocketIO(app, cors_allowed_origins="*", async_mode='threading', logger=True, engineio_logger=True)
 
 # Data storage
 DATA_DIR = Path('data')
@@ -102,8 +100,8 @@ def update_data():
                 current_state['cam2'].get('min', ''),
                 current_state['cam2'].get('max', ''),
                 current_state['cam2'].get('avg', ''),
-                current_state['arduino'].get('air_velocity_arduino', ''),  # Arduino air
-                current_state.get('air_velocity_raspi', ''),  # Raspi air
+                current_state['arduino'].get('air_velocity_arduino', ''),
+                current_state.get('air_velocity_raspi', ''),
                 current_state['arduino'].get('temperature', ''),
                 current_state['arduino'].get('humidity', ''),
                 current_state['arduino'].get('pmv', ''),
@@ -116,9 +114,6 @@ def update_data():
             with open(CSV_FILE, 'a', newline='') as f:
                 writer = csv.writer(f)
                 writer.writerow(row)
-        
-        # Broadcast to all connected clients
-        socketio.emit('update', current_state)
         
         return jsonify({'success': True})
     
@@ -137,12 +132,6 @@ def upload_image():
             current_state['cam1_image'] = data['cam1']
         if 'cam2' in data:
             current_state['cam2_image'] = data['cam2']
-        
-        # Broadcast images
-        socketio.emit('images', {
-            'cam1': current_state.get('cam1_image'),
-            'cam2': current_state.get('cam2_image')
-        })
         
         return jsonify({'success': True})
     
@@ -205,4 +194,4 @@ def health():
 # ==================== MAIN ====================
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
-    socketio.run(app, host='0.0.0.0', port=port, debug=False, allow_unsafe_werkzeug=True)
+    app.run(host='0.0.0.0', port=port, debug=False)
