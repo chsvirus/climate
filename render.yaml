@@ -3,7 +3,7 @@ services:
     name: climate-control
     env: python
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn --worker-class eventlet -w 1 cloud_server:app
+    startCommand: gunicorn -w 1 --threads 4 --timeout 120 cloud_server:app
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0
