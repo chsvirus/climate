@@ -4,4 +4,5 @@ Flask-CORS==4.0.0
 python-socketio==5.10.0
 simple-websocket==1.0.0
 gunicorn==21.2.0
-eventlet==0.33.3
+gevent==24.2.1
+gevent-websocket==0.10.1
